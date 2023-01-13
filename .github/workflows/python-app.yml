@@ -1,0 +1,45 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python application
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Nexus IQ for GitHub Actions
+      uses: sonatype-nexus-community/iq-github-action@1.1.1
+      with:
+        # Nexus IQ Server URL
+        serverUrl: ${{ secrets.iqurl }}
+        # Username to connect to IQ Server for policy evaluation
+        username: ${{ secrets.iquser }}
+        # Password to connect to IQ Server for policy evaluation
+        password: ${{ secrets.iqpassword }}
+        # Determines the policy elements (policies, labels, and license threat groups) to associate with this build, and is managed via the Nexus IQ Server.
+        applicationId: dvpwa__bcbarbosa_2
+        # Controls the stage the policy evaluation will be run against on the Nexus IQ Server.
+        stage: build
+        # This is the path to a specific application archive file, a directory containing such archives or the ID of a Docker image. For archives, a number of formats are supported, including jar, war, ear, tar, tar.gz, zip and many others.
+        target: .
